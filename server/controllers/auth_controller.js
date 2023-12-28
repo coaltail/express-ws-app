@@ -16,7 +16,7 @@ export async function authRegisterController (req, res) {
     // Check if the email already exists
     const existingUser = await User.findOne({ email })
     if (existingUser) {
-      return res.status(400).json({ message: 'Email already exists' })
+      return res.status(400).json({ message: 'User already exists' })
     }
 
     // Hash the password
@@ -41,11 +41,12 @@ export async function authRegisterController (req, res) {
 
     res.status(201).json({
       message: 'User registered successfully',
-      user: newUser,
       token
     })
   } catch (error) {
-    res.status(500).json(error)
+    res.status(500).json({
+      Error: error
+    })
   }
 }
 
@@ -77,7 +78,16 @@ export async function authLoginController (req, res) {
     // Passwords match, generate a token for the user
     const token = jsonwebtoken.sign({ userId: user._id }, process.env.TOKEN_SECRET, { expiresIn: '2h' })
 
-    res.status(200).json({ message: 'Login successful', user, token })
+    res.status(200).json({
+      message: 'Login successful',
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        username: user.username
+      },
+      token
+    })
   } catch (error) {
     res.status(500).json(error)
   }
@@ -129,18 +139,27 @@ export async function authUserGetController (req, res) {
   try {
     const { id } = req.params
 
-    // Check if the user can get
-    console.log('User id is: ', id)
-    console.log('User id from token is: ', req.user.userId)
-    if (req.user.userId !== id) {
-      return res.status(403).json({ message: 'Unauthorized' })
-    }
-
     // Get the user based on the id
     const user = await User.findById(id)
 
     res.status(200).json({ message: 'User retrieved successfully', user })
   } catch (error) {
     res.status(500).json(error)
+  }
+}
+
+export async function authUserChangePasswordController (req, res) {
+  try {
+    const { email, password, newPassword } = req.body
+    const errs = validationResult(req)
+    if (!errs.isEmpty()) {
+      return res.status(400).json({ errors: errs.array() })
+    }
+
+    const user = await User.findOne({ email })
+  } catch (error) {
+    res.status(500).json({
+      Error: error
+    })
   }
 }
