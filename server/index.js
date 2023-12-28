@@ -3,7 +3,7 @@ import { createServer } from 'node:http'
 import { Server } from 'socket.io'
 import userRoutes from './routes/user_routes.js'
 import bodyParser from 'body-parser'
-import connect from './db/database.js'
+import { connect } from './db/database.js'
 const app = express()
 const server = createServer(app)
 const io = new Server(server)
