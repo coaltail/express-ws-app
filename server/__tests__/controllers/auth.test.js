@@ -263,70 +263,72 @@ describe('Testing user delete controller', () => {
   })
 })
 describe('Testing password change controller', () => { })
-describe('Testing userIsAuthenticated middleware', () => {
-  it('should return 401 status code if no token is provided', () => {
-    const req = {
-      headers: {
-        authorization: null
+describe('Testing authentication middleware', () => {
+  describe('Testing userIsAuthenticated middleware', () => {
+    it('should return 401 status code if no token is provided', () => {
+      const req = {
+        headers: {
+          authorization: null
+        }
       }
-    }
-    const res = {
-      sendStatus: jest.fn()
-    }
-    const next = jest.fn()
-
-    userIsAuthenticated(req, res, next)
-
-    expect(res.sendStatus).toHaveBeenCalledWith(401)
-    expect(next).not.toHaveBeenCalled()
-  })
-
-  it('should verify the token and call next if token is provided', () => {
-    const token = 'valid_token'
-    const req = {
-      headers: {
-        authorization: `Bearer ${token}`
+      const res = {
+        sendStatus: jest.fn()
       }
-    }
-    const res = {
-      json: jest.fn()
-    }
-    const next = jest.fn()
+      const next = jest.fn()
 
-    jwt.verify = jest.fn((token, secret, callback) => {
-      callback(null, { userId: '123456789' })
+      userIsAuthenticated(req, res, next)
+
+      expect(res.sendStatus).toHaveBeenCalledWith(401)
+      expect(next).not.toHaveBeenCalled()
     })
 
-    userIsAuthenticated(req, res, next)
-
-    expect(jwt.verify).toHaveBeenCalledWith(token, process.env.TOKEN_SECRET, expect.any(Function))
-    expect(req.user).toEqual({ userId: '123456789' })
-    expect(next).toHaveBeenCalled()
-    expect(res.json).not.toHaveBeenCalled()
-  })
-
-  it('should return an error message if token verification fails', () => {
-    const token = 'invalid_token'
-    const req = {
-      headers: {
-        authorization: `Bearer ${token}`
+    it('should verify the token and call next if token is provided', () => {
+      const token = 'valid_token'
+      const req = {
+        headers: {
+          authorization: `Bearer ${token}`
+        }
       }
-    }
-    const res = {
-      json: jest.fn()
-    }
-    const next = jest.fn()
+      const res = {
+        json: jest.fn()
+      }
+      const next = jest.fn()
 
-    jwt.verify = jest.fn((token, secret, callback) => {
-      callback(new Error('Invalid token'))
+      jwt.verify = jest.fn((token, secret, callback) => {
+        callback(null, { userId: '123456789' })
+      })
+
+      userIsAuthenticated(req, res, next)
+
+      expect(jwt.verify).toHaveBeenCalledWith(token, process.env.TOKEN_SECRET, expect.any(Function))
+      expect(req.user).toEqual({ userId: '123456789' })
+      expect(next).toHaveBeenCalled()
+      expect(res.json).not.toHaveBeenCalled()
     })
 
-    userIsAuthenticated(req, res, next)
+    it('should return an error message if token verification fails', () => {
+      const token = 'invalid_token'
+      const req = {
+        headers: {
+          authorization: `Bearer ${token}`
+        }
+      }
+      const res = {
+        json: jest.fn()
+      }
+      const next = jest.fn()
 
-    expect(jwt.verify).toHaveBeenCalledWith(token, process.env.TOKEN_SECRET, expect.any(Function))
-    expect(req.user).toBeUndefined()
-    expect(next).not.toHaveBeenCalled()
-    expect(res.json).toHaveBeenCalledWith({ message: Error('Invalid token') })
+      jwt.verify = jest.fn((token, secret, callback) => {
+        callback(new Error('Invalid token'))
+      })
+
+      userIsAuthenticated(req, res, next)
+
+      expect(jwt.verify).toHaveBeenCalledWith(token, process.env.TOKEN_SECRET, expect.any(Function))
+      expect(req.user).toBeUndefined()
+      expect(next).not.toHaveBeenCalled()
+      expect(res.json).toHaveBeenCalledWith({ message: Error('Invalid token') })
+    })
   })
   describe('Testing isCorrectUser middleware', () => {
     it('should return 500 if req.user or req.params is undefined', () => {
