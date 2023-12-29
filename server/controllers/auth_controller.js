@@ -64,7 +64,7 @@ export async function authLoginController (req, res) {
 
     // If user not found, return error
     if (!user) {
-      return res.status(400).json({ message: 'Invalid email or password' })
+      return res.status(400).json({ message: 'User does not exist' })
     }
 
     // Compare the hashed password with the password sent in the request
@@ -103,15 +103,18 @@ export async function authUserUpdateController (req, res) {
     const { ...data } = req.body
     const { id } = req.params
 
-    // Check if the user can update
-    if (req.user.userId !== id) {
-      return res.status(403).json({ message: 'Unauthorized' })
-    }
-
     // Update the user based on the id
     const updatedUser = await User.findByIdAndUpdate(id, { ...data }, { new: true })
 
-    res.status(200).json({ message: 'User updated successfully', user: updatedUser })
+    res.status(200).json({
+      message: 'User updated successfully',
+      user: {
+        id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        username: updatedUser.username
+      }
+    })
   } catch (error) {
     res.status(500).json(error)
   }
@@ -121,12 +124,6 @@ export async function authUserDeleteController (req, res) {
   try {
     const { id } = req.params
 
-    // Check if the user can delete
-    if (req.user.userId !== id) {
-      return res.status(403).json({ message: 'Unauthorized' })
-    }
-
-    // Delete the user based on the id
     await User.findByIdAndDelete(id)
 
     res.status(200).json({ message: 'User deleted successfully' })
