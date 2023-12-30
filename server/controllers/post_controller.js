@@ -37,9 +37,9 @@ export async function postsGetController (req, res) {
   try {
     const { id } = req.params
     const posts = await Post.find({ postedBy: id }).populate('postedBy', 'username')
-    res.status(200).json(posts)
+    return res.status(200).json(posts)
   } catch (err) {
-    res.status(500).json({ error: err })
+    return res.status(500).json({ error: err.message }) // Handle the error by sending the error message in the response
   }
 }
 
