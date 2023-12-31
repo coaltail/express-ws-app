@@ -1,5 +1,5 @@
 import Post from '../../schema/post_schema'
-import { jest, it, describe, expect, afterEach, beforeEach, beforeAll } from '@jest/globals'
+import { jest, it, describe, expect, afterEach } from '@jest/globals'
 import { postCreateController, postDeleteController, postLikeController, postUpdateController, postsGetController, singlePostGetController } from '../../controllers/post_controller'
 jest.mock('../../schema/post_schema', () => jest.fn())
 jest.mock('../../schema/post_schema.js', () => ({
@@ -145,35 +145,54 @@ describe('Testing post like controller', () => {
   })
 })
 
-describe('postsGetController', () => {
+describe('Testing postsGetController', () => {
   afterEach(() => {
-    jest.clearAllMocks() // Clear mock function calls after each test
+    jest.clearAllMocks()
   })
 
-  const mockReq = {
-    params: {
-      id: 'user123' // replace with a valid user ID for testing
+  it('should return posts with populated postedBy field', async () => {
+    const mockFind = jest.spyOn(Post, 'find').mockReturnThis()
+    const mockPopulate = jest.spyOn(Post, 'populate').mockReturnThis()
+
+    const req = {
+      params: {
+        id: 'user_id'
+      },
+      user:
+      {
+        userId: 'user_id'
+      }
     }
-  }
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    }
 
-  const mockRes = {
-    status: jest.fn(),
-    json: jest.fn()
-  }
+    await postsGetController(req, res)
 
-  it('should retrieve and return posts for a given user ID', async () => {
-    // Mock the behavior of the Post.find and populate methods
-    const fakePosts = [{ title: 'Post 1', body: 'One' }, { title: 'Post 2', body: 'Two' }]
-    Post.find = jest.fn().mockResolvedValue(fakePosts)
-    Post.populate = jest.fn().mockResolvedValue(fakePosts.map(post => ({ postedBy: { username: 'user123' }, ...post })))
+    expect(mockFind).toHaveBeenCalledWith({ postedBy: 'user_id' })
+    expect(mockPopulate).toHaveBeenCalledWith('postedBy', 'username')
+    expect(res.status).toHaveBeenCalledWith(200)
+    expect(res.json).toHaveBeenCalledWith(expect.any(Array))
+  })
 
-    // Call the function with the mock request and response objects
-    await postsGetController(mockReq, mockRes)
+  it('should handle errors and return 500 status with error message', async () => {
+    const mockFind = jest.spyOn(Post, 'find').mockRejectedValue('Database error').catch((err) => { console.log(err) })
 
-    // Verify that the response status is set to 200
-    expect(mockRes.status).toHaveBeenCalledWith(200)
+    const req = {
+      params: {
+        id: 'user_id'
+      }
+    }
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    }
 
-    // Verify that the response JSON method is called with the expected posts
-    expect(mockRes.json).toHaveBeenCalledWith(fakePosts)
+    await postsGetController(req, res).catch((err) => { console.log(err) })
+
+    expect(mockFind).toHaveBeenCalledWith({ postedBy: 'user_id' })
+    expect(res.status).toHaveBeenCalledWith(500)
+    expect(res.json).toHaveBeenCalledWith({ error: 'Database error' })
   })
 })
