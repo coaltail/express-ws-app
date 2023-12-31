@@ -13,4 +13,6 @@ router.put('/update/:id', userIsAuthenticated, isCorrectUser, authUserUpdateCont
 router.get('/:id', userIsAuthenticated, isCorrectUser, authUserGetController)
 
 router.delete('/delete/:id', userIsAuthenticated, isCorrectUser, authUserDeleteController)
+
+router.patch('/password', userIsAuthenticated, isCorrectUser, authUserUpdateController)
 export default router

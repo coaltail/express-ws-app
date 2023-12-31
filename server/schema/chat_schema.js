@@ -19,6 +19,12 @@ const chatSchema = new mongoose.Schema({
     type: String,
     enum: ['active', 'deleted'],
     default: 'active'
+  },
+  type: {
+    type: String,
+    enum: ['private', 'group'],
+    default: 'private',
+    required: true
   }
 })
 

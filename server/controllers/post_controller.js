@@ -36,7 +36,11 @@ export async function postLikeController (req, res) {
 export async function postsGetController (req, res) {
   try {
     const { id } = req.params
-    const posts = await Post.find({ postedBy: id }).populate('postedBy', 'username')
+    const posts = await Post.find({ postedBy: id }).select('body title likes')
+    if (!posts) {
+      return res.status(404).json({ message: 'Posts not found' })
+    }
+    console.log(posts)
     return res.status(200).json(posts)
   } catch (err) {
     return res.status(500).json({ error: err.message }) // Handle the error by sending the error message in the response

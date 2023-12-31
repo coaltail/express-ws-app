@@ -145,24 +145,9 @@ describe('Testing post like controller', () => {
   })
 })
 
-describe('Testing postsGetController', () => {
-  afterEach(() => {
-    jest.clearAllMocks()
-  })
-
-  it('should return posts with populated postedBy field', async () => {
-    const mockFind = jest.spyOn(Post, 'find').mockReturnThis()
-    const mockPopulate = jest.spyOn(Post, 'populate').mockReturnThis()
-
-    const req = {
-      params: {
-        id: 'user_id'
-      },
-      user:
-      {
-        userId: 'user_id'
-      }
-    }
+describe('Testing posts get controller', () => {
+  it('should return posts for a given user ID', async () => {
+    const req = { params: { id: 'user123' } }
     const res = {
       status: jest.fn().mockReturnThis(),
       json: jest.fn()
@@ -170,29 +155,39 @@ describe('Testing postsGetController', () => {
 
     await postsGetController(req, res)
 
-    expect(mockFind).toHaveBeenCalledWith({ postedBy: 'user_id' })
-    expect(mockPopulate).toHaveBeenCalledWith('postedBy', 'username')
+    expect(Post.find).toHaveBeenCalledWith({ postedBy: 'user123' })
     expect(res.status).toHaveBeenCalledWith(200)
     expect(res.json).toHaveBeenCalledWith(expect.any(Array))
   })
 
-  it('should handle errors and return 500 status with error message', async () => {
-    const mockFind = jest.spyOn(Post, 'find').mockRejectedValue('Database error').catch((err) => { console.log(err) })
-
-    const req = {
-      params: {
-        id: 'user_id'
-      }
-    }
+  it('should return 404 if no posts are found', async () => {
+    const req = { params: { id: 'user123' } }
     const res = {
       status: jest.fn().mockReturnThis(),
       json: jest.fn()
     }
+    Post.find.mockResolvedValueOnce(null)
 
-    await postsGetController(req, res).catch((err) => { console.log(err) })
+    await postsGetController(req, res)
 
-    expect(mockFind).toHaveBeenCalledWith({ postedBy: 'user_id' })
+    expect(Post.find).toHaveBeenCalledWith({ postedBy: 'user123' })
+    expect(res.status).toHaveBeenCalledWith(404)
+    expect(res.json).toHaveBeenCalledWith({ message: 'Posts not found' })
+  })
+
+  it('should return 500 if an error occurs', async () => {
+    const req = { params: { id: 'user123' } }
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    }
+    const error = new Error('Internal Server Error')
+    Post.find.mockRejectedValueOnce(error)
+
+    await postsGetController(req, res)
+
+    expect(Post.find).toHaveBeenCalledWith({ postedBy: 'user123' })
     expect(res.status).toHaveBeenCalledWith(500)
-    expect(res.json).toHaveBeenCalledWith({ error: 'Database error' })
+    expect(res.json).toHaveBeenCalledWith({ error: error.message })
   })
 })

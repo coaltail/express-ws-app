@@ -154,6 +154,19 @@ export async function authUserChangePasswordController (req, res) {
     }
 
     const user = await User.findOne({ email })
+    if (!user) {
+      return res.status(400).json({ message: 'User does not exist' })
+    }
+
+    const passwordMatch = await bcrypt.compare(password, user.password)
+    if (!passwordMatch) {
+      return res.status(400).json({ message: 'Invalid email or password' })
+    }
+
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10)
+    await user.updateOne({ password: hashedNewPassword })
+
+    return res.status(200).json({ message: 'Password changed successfully' })
   } catch (error) {
     res.status(500).json({
       Error: error

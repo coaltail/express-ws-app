@@ -1,11 +1,11 @@
-import { authRegisterController, authLoginController, authUserUpdateController, authUserGetController, authUserDeleteController } from '../../controllers/auth_controller.js'
+import { authRegisterController, authLoginController, authUserUpdateController, authUserChangePasswordController, authUserGetController, authUserDeleteController } from '../../controllers/auth_controller.js'
 import User from '../../schema/user_schema.js'
 import { jest, it, describe, expect } from '@jest/globals'
 import jwt from 'jsonwebtoken'
 import { userIsAuthenticated, isCorrectUser } from '../../middleware/user_middleware.js'
 import bcrypt from 'bcrypt'
 jest.mock('../../schema/user_schema.js', () => jest.fn())
-
+jest.mock('bcrypt', () => ({ hash: jest.fn(), compare: jest.fn() }))
 const request = {
   body: {
     name: 'test',
@@ -388,5 +388,114 @@ describe('Testing authentication middleware', () => {
 
       expect(next).toHaveBeenCalled()
     })
+  })
+})
+describe('Testing user change password controller', () => {
+  it('should return 400 if user does not exist', async () => {
+    const req = {
+      body: {
+        email: 'coaltail222@gmail.com',
+        password: 'password',
+        newPassword: 'newpassword'
+      }
+    }
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    }
+    const findOneMock = jest.spyOn(User, 'findOne').mockResolvedValue(null)
+
+    await authUserChangePasswordController(req, res)
+
+    expect(findOneMock).toHaveBeenCalledWith({ email: 'coaltail222@gmail.com' })
+    expect(res.status).toHaveBeenCalledWith(400)
+    expect(res.json).toHaveBeenCalledWith({ message: 'User does not exist' })
+  })
+
+  it('should return 400 if password is incorrect', async () => {
+    const req = {
+      body: {
+        email: 'coaltail222@gmail.com',
+        password: 'password',
+        newPassword: 'newpassword'
+      }
+    }
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    }
+    const user = {
+      email: 'coaltail222@gmail.com',
+      password: 'password'
+    }
+    const findOneMock = jest.spyOn(User, 'findOne').mockResolvedValue(user)
+    const compareMock = jest.spyOn(bcrypt, 'compare').mockResolvedValue(false)
+
+    await authUserChangePasswordController(req, res)
+
+    expect(findOneMock).toHaveBeenCalledWith({ email: 'coaltail222@gmail.com' })
+    expect(compareMock).toHaveBeenCalledWith('password', 'password')
+    expect(res.status).toHaveBeenCalledWith(400)
+    expect(res.json).toHaveBeenCalledWith({ message: 'Invalid email or password' })
+  })
+
+  it('should return 500 if an error occurs', async () => {
+    const req = {
+      body: {
+        email: 'coaltail222@gmail.com',
+        password: 'password',
+        newPassword: 'newpassword'
+      }
+    }
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    }
+    const findOneMock = jest.spyOn(User, 'findOne').mockRejectedValue(new Error('Database error'))
+
+    await authUserChangePasswordController(req, res)
+
+    expect(findOneMock).toHaveBeenCalledWith({ email: 'coaltail222@gmail.com' })
+    expect(res.status).toHaveBeenCalledWith(500)
+    expect(res.json).toHaveBeenCalledWith({ Error: new Error('Database error') })
+  })
+
+  it('should change the password successfully', async () => {
+    const req = {
+      body: {
+        email: 'test@example.com',
+        password: 'oldPassword',
+        newPassword: 'newPassword'
+      }
+    }
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    }
+    const user = {
+      email: 'test@example.com',
+      password: 'oldPassword'
+    }
+
+    // Mock User.findOne to return the user
+    User.findOne = jest.fn().mockResolvedValue(user)
+
+    // Mock bcrypt.compare to return true
+    bcrypt.compare = jest.fn().mockResolvedValue(true)
+
+    // Mock bcrypt.hash to return the hashed password
+    bcrypt.hash = jest.fn().mockResolvedValue('hashedPassword')
+
+    // Mock user.updateOne to return a success message
+    user.updateOne = jest.fn().mockResolvedValue({ message: 'Password changed successfully' })
+
+    await authUserChangePasswordController(req, res)
+
+    expect(User.findOne).toHaveBeenCalledWith({ email: 'test@example.com' })
+    expect(bcrypt.compare).toHaveBeenCalledWith('oldPassword', 'oldPassword')
+    expect(bcrypt.hash).toHaveBeenCalledWith('newPassword', 10)
+    expect(user.updateOne).toHaveBeenCalledWith({ password: 'hashedPassword' })
+    expect(res.status).toHaveBeenCalledWith(200)
+    expect(res.json).toHaveBeenCalledWith({ message: 'Password changed successfully' })
   })
 })
