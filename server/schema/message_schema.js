@@ -5,13 +5,15 @@ const messageSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  messageSender: {
+  senderId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    ref: 'User',
+    required: true
   },
-  messageRecipient: {
+  recipientId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    ref: 'User',
+    required: true
   },
   images: [{
     type: mongoose.Schema.Types.ObjectId,
@@ -19,7 +21,8 @@ const messageSchema = new mongoose.Schema({
   }],
   chat: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Chat'
+    ref: 'Chat',
+    required: true
   },
   createdAt: {
     type: Date,

@@ -11,7 +11,7 @@ export async function authRegisterController (req, res) {
       return res.status(400).json({ errors: errors.array() })
     }
 
-    const { email, password, ...rest } = req.body
+    const { posts, followers, following, createdAt, updatedAt, deletedAt, password, email, ...rest } = req.body
 
     // Check if the email already exists
     const existingUser = await User.findOne({ email })
@@ -25,7 +25,6 @@ export async function authRegisterController (req, res) {
     // Create a new user with the hashed password
     const newUser = new User({
       ...rest,
-      email,
       password: hashedPassword
     })
 

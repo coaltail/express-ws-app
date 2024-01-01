@@ -81,7 +81,8 @@ export async function postUpdateController (req, res) {
 export async function singlePostGetController (req, res) {
   try {
     const { id } = req.params
-    const post = await Post.findById(id).populate('postedBy', 'username')
+    const post = await Post.findById(id)
+    post.populate('postedBy', 'username')
     if (!post) {
       return res.status(404).json({ message: 'Post not found' })
     }

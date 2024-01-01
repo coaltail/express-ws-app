@@ -2,11 +2,9 @@ import Message from '../schema/message_schema.js'
 
 export async function sendMessage (req, res) {
   try {
-    const { messageSender, messageRecipient, body } = req.body
+    const { status, deletedAt, createdAt, ...data } = req.body // Exclude status, deletedAt, and createdAt from req.body
     const newMessage = new Message({
-      messageSender,
-      messageRecipient,
-      body
+      ...data
     })
     await newMessage.save()
     res.status(200).json({ message: 'Message sent successfully' })
