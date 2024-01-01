@@ -14,9 +14,9 @@ export async function postCreateController (req, res) {
 
 export async function postLikeController (req, res) {
   try {
-    const { postId } = req.body
+    const { id } = req.params
     const { userId } = req.user
-    const post = await Post.findById(postId)
+    const post = await Post.findById(id)
     if (!post) {
       return res.status(404).json({ message: 'Post not found' })
     }
@@ -49,11 +49,7 @@ export async function postsGetController (req, res) {
 
 export async function postDeleteController (req, res) {
   try {
-    const { id } = req.params
-    const post = await Post.findById(id)
-    if (!post) {
-      return res.status(404).json({ message: 'Post not found' })
-    }
+    const post = req.model
     await post.delete()
     res.status(200).json({ message: 'Post deleted successfully' })
   } catch (err) {
@@ -63,12 +59,8 @@ export async function postDeleteController (req, res) {
 
 export async function postUpdateController (req, res) {
   try {
-    const { id } = req.params
     const { title, body } = req.body
-    const post = await Post.findById(id)
-    if (!post) {
-      return res.status(404).json({ message: 'Post not found' })
-    }
+    const post = req.model
     post.title = title
     post.body = body
     await post.save()

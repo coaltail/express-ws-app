@@ -3,7 +3,7 @@ import Message from '../schema/message_schema.js'
 const checkIfChatExists = async (req, res, next) => {
   const chatId = req.params.chatId
   const chat = await Chat.findById(chatId)
-
+  console.log(req.params)
   if (!chat) return res.status(404).json({ message: 'Chat not found' })
 
   next()

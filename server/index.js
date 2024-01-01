@@ -18,7 +18,7 @@ connect().catch(error => console.error(error))
 app.use('/auth', userRoutes)
 app.use('/posts', postRoutes)
 app.use('/chat', chatRoutes)
-app.use('/chats/:chatId/messages', messageRoutes)
+app.use('/t', messageRoutes)
 io.on('connection', (socket) => {
   socket.on('chat message', (msg) => {
     io.emit('chat message', msg)

@@ -4,6 +4,6 @@ import { userIsAuthenticated } from '../middleware/user_middleware.js'
 import { checkIfChatExists, userCanDeleteMessage } from '../middleware/message_middleware.js'
 const router = express.Router()
 router.use(userIsAuthenticated, checkIfChatExists)
-router.post('/', sendMessage)
-router.delete('./:messageId', userCanDeleteMessage, deleteMessage)
+router.post('/:chatId/messages', sendMessage)
+router.delete('/:chatId/message/:messageId', userCanDeleteMessage, deleteMessage)
 export default router
