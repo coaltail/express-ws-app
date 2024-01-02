@@ -37,7 +37,7 @@ export async function postsGetController (req, res) {
   try {
     const { id } = req.params
     const posts = await Post.find({ postedBy: id }).select('body title likes')
-    if (!posts) {
+    if (posts.length === 0) {
       return res.status(404).json({ message: 'Posts not found' })
     }
     console.log(posts)

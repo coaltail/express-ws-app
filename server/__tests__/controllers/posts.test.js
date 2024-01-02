@@ -1,7 +1,7 @@
 import Post from '../../schema/post_schema'
 import { jest, it, describe, expect, afterEach } from '@jest/globals'
 import { postCreateController, postDeleteController, postLikeController, postUpdateController, postsGetController, singlePostGetController } from '../../controllers/post_controller'
-jest.mock('../../schema/post_schema', () => jest.fn())
+jest.mock('../../schema/post_schema.js')
 describe('Testing post create controller', () => {
   it('should create a new post and return a success message', async () => {
     const req = {
@@ -59,8 +59,8 @@ describe('Testing post create controller', () => {
 describe('Testing post like controller', () => {
   it('should unlike a post if it is already liked', async () => {
     const req = {
-      body: {
-        postId: 'testPostId'
+      params: {
+        id: 'testPostId'
       },
       user: {
         userId: 'testUserId'
@@ -88,8 +88,8 @@ describe('Testing post like controller', () => {
 
   it('should like a post if it is not already liked', async () => {
     const req = {
-      body: {
-        postId: 'testPostId'
+      params: {
+        id: 'testPostId'
       },
       user: {
         userId: 'testUserId'
@@ -117,8 +117,8 @@ describe('Testing post like controller', () => {
 
   it('should return an error response if there is an error while finding the post', async () => {
     const req = {
-      body: {
-        postId: 'testPostId'
+      params: {
+        id: 'testPostId'
       },
       user: {
         userId: 'testUserId'
@@ -139,52 +139,3 @@ describe('Testing post like controller', () => {
     expect(res.json).toHaveBeenCalledWith({ error: 'Error finding post' })
   })
 })
-
-/* Need to fix later, tests are failing
-describe('Testing posts get controller', () => {
-  it('should return posts for a given user ID', async () => {
-    const req = { params: { id: 'user123' } }
-    const res = {
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn()
-    }
-
-    await postsGetController(req, res)
-
-    expect(Post.find).toHaveBeenCalledWith({ postedBy: 'user123' })
-    expect(res.status).toHaveBeenCalledWith(200)
-    expect(res.json).toHaveBeenCalledWith(expect.any(Array))
-  })
-
-  it('should return 404 if no posts are found', async () => {
-    const req = { params: { id: 'user123' } }
-    const res = {
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn()
-    }
-    Post.find.mockResolvedValueOnce(null)
-
-    await postsGetController(req, res)
-
-    expect(Post.find).toHaveBeenCalledWith({ postedBy: 'user123' })
-    expect(res.status).toHaveBeenCalledWith(404)
-    expect(res.json).toHaveBeenCalledWith({ message: 'Posts not found' })
-  })
-
-  it('should return 500 if an error occurs', async () => {
-    const req = { params: { id: 'user123' } }
-    const res = {
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn()
-    }
-    const error = new Error('Internal Server Error')
-    Post.find.mockRejectedValueOnce(error)
-
-    await postsGetController(req, res)
-
-    expect(Post.find).toHaveBeenCalledWith({ postedBy: 'user123' })
-    expect(res.status).toHaveBeenCalledWith(500)
-    expect(res.json).toHaveBeenCalledWith({ error: error.message })
-  })
-})
-*/
