@@ -1,5 +1,5 @@
 import Post from '../../schema/post_schema'
-import { jest, it, describe, expect, afterEach } from '@jest/globals'
+import { jest, it, describe, expect } from '@jest/globals'
 import { postCreateController, postDeleteController, postLikeController, postUpdateController, postsGetController, singlePostGetController } from '../../controllers/post_controller'
 jest.mock('../../schema/post_schema.js')
 describe('Testing post create controller', () => {
@@ -137,5 +137,80 @@ describe('Testing post like controller', () => {
     expect(Post.findById).toHaveBeenCalledWith('testPostId')
     expect(res.status).toHaveBeenCalledWith(500)
     expect(res.json).toHaveBeenCalledWith({ error: 'Error finding post' })
+  })
+})
+
+describe('Testing post delete controller', () => {
+  it('Should return 500 if an error occurs while deleting a post', async () => {
+    const req = {
+      model: {
+        delete: jest.fn().mockRejectedValueOnce('Error deleting post')
+      }
+    }
+
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    }
+
+    await postDeleteController(req, res)
+
+    expect(req.model.delete).toHaveBeenCalledWith()
+    expect(res.status).toHaveBeenCalledWith(500)
+    expect(res.json).toHaveBeenCalledWith({ error: 'Error deleting post' })
+  })
+  it('Should return 200 if a post is deleted successfully', async () => {
+    const req = {
+      model: {
+        delete: jest.fn().mockResolvedValueOnce()
+      }
+    }
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    }
+    await postDeleteController(req, res)
+    expect(req.model.delete).toHaveBeenCalled()
+    expect(res.status).toHaveBeenCalledWith(200)
+    expect(res.json).toHaveBeenCalledWith({ message: 'Post deleted successfully' })
+  })
+})
+
+describe('Testing post update controller', () => {
+  it('Should return 500 if an error occurs while updating a post', async () => {
+    const req = {
+      body: {
+        title: 'Test Post',
+        body: 'This is a test post'
+      },
+      model: {
+        save: jest.fn().mockRejectedValueOnce('Error updating post')
+      }
+    }
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    }
+    await postUpdateController(req, res)
+    expect(res.status).toHaveBeenCalledWith(500)
+    expect(res.json).toHaveBeenCalledWith({ error: 'Error updating post' })
+  })
+  it('Should return 200 if a post is updated successfully', async () => {
+    const req = {
+      body: {
+        title: 'Test Post',
+        body: 'This is a test post'
+      },
+      model: {
+        save: jest.fn().mockResolvedValueOnce()
+      }
+    }
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    }
+    await postUpdateController(req, res)
+    expect(res.status).toHaveBeenCalledWith(200)
+    expect(res.json).toHaveBeenCalledWith({ message: 'Post updated successfully' })
   })
 })

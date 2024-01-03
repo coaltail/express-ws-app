@@ -2,7 +2,6 @@ import { authRegisterController, authLoginController, authUserUpdateController, 
 import User from '../../schema/user_schema.js'
 import { jest, it, describe, expect } from '@jest/globals'
 import jwt from 'jsonwebtoken'
-import { userIsAuthenticated, isCorrectUser } from '../../middleware/user_middleware.js'
 import bcrypt from 'bcrypt'
 jest.mock('../../schema/user_schema.js', () => jest.fn())
 jest.mock('bcrypt', () => ({ hash: jest.fn(), compare: jest.fn() }))

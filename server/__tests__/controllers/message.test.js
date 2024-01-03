@@ -42,3 +42,36 @@ describe('Testing send message controller', () => {
     expect(res.json).toHaveBeenCalledWith({ message: 'Message sent successfully' })
   })
 })
+
+describe('Testing message delete controller', () => {
+  it('should return 500 if an error occurs', async () => {
+    const req = {
+      body: {
+        messageId: '123456789'
+      }
+    }
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    }
+    jest.spyOn(Message, 'findByIdAndDelete').mockRejectedValueOnce(new Error('Error'))
+    await deleteMessage(req, res)
+    expect(res.status).toHaveBeenCalledWith(500)
+    expect(res.json).toHaveBeenCalledWith({ error: new Error('Error') })
+  })
+  it('should return 200 if message is deleted successfully', async () => {
+    const req = {
+      body: {
+        messageId: '123456789'
+      }
+    }
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    }
+    jest.spyOn(Message, 'findByIdAndDelete').mockResolvedValueOnce()
+    await deleteMessage(req, res)
+    expect(res.status).toHaveBeenCalledWith(200)
+    expect(res.json).toHaveBeenCalledWith({ message: 'Message deleted successfully' })
+  })
+})
