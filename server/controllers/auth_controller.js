@@ -2,6 +2,7 @@ import { validationResult } from 'express-validator'
 import bcrypt from 'bcrypt'
 import User from '../schema/user_schema.js'
 import jsonwebtoken from 'jsonwebtoken'
+import { setTokenCookie, generateToken } from '../utils/auth_utils.js'
 
 export async function authRegisterController (req, res) {
   try {
@@ -31,16 +32,12 @@ export async function authRegisterController (req, res) {
     // Save the user to the database
     await newUser.save()
 
-    // Generate a token for the user
-    const token = jsonwebtoken.sign(
-      { userId: newUser._id },
-      process.env.TOKEN_SECRET,
-      { expiresIn: '1h' }
-    )
+    const token = generateToken(newUser)
+    console.log(token)
 
+    setTokenCookie(res, token)
     res.status(201).json({
-      message: 'User registered successfully',
-      token
+      message: 'User registered successfully'
     })
   } catch (error) {
     res.status(500).json({
@@ -71,11 +68,14 @@ export async function authLoginController (req, res) {
 
     // If passwords don't match, return error
     if (!passwordMatch) {
-      return res.status(400).json({ message: 'Invalid email or password' })
+      return res.status(400).json({ message: 'Invalid password' })
     }
 
     // Passwords match, generate a token for the user
-    const token = jsonwebtoken.sign({ userId: user._id }, process.env.TOKEN_SECRET, { expiresIn: '2h' })
+    const token = generateToken(user)
+
+    // Set the token as a cookie
+    setTokenCookie(res, token)
 
     res.status(200).json({
       message: 'Login successful',
@@ -84,8 +84,7 @@ export async function authLoginController (req, res) {
         name: user.name,
         email: user.email,
         username: user.username
-      },
-      token
+      }
     })
   } catch (error) {
     res.status(500).json(error)
@@ -170,5 +169,20 @@ export async function authUserChangePasswordController (req, res) {
     res.status(500).json({
       Error: error
     })
+  }
+}
+
+export const tokenRefreshController = (req, res) => {
+  const token = req.cookies.token
+  if (!token) {
+    return res.status(401).json({ message: 'Authentication invalid' })
+  }
+  try {
+    const { payload } = jsonwebtoken.verify(token, process.env.TOKEN_SECRET)
+    const authToken = generateToken(payload)
+    setTokenCookie(res, authToken)
+    res.status(200).json({ message: 'Token refreshed' })
+  } catch (error) {
+    res.status(401).json({ message: 'Authentication invalid' })
   }
 }
