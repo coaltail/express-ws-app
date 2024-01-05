@@ -14,10 +14,10 @@ const app = express()
 const server = createServer(app)
 const io = socketSetup(server)
 
-app.use(bodyParser.urlencoded({ extended: false }))
-app.use(bodyParser.json())
 app.use(cors())
 app.use(cookieParser())
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json())
 connect().catch(error => console.error(error))
 
 const apiRouter = express.Router()
@@ -33,10 +33,7 @@ io.on('connection', (socket) => {
     io.emit('chat message', msg)
   })
 })
-
-app.get('/', (req, res) => {
-  res.send('Hello World!')
-})
+app.get('/healthcheck', (req, res) => { res.end('ok') })
 
 server.listen(3000, () => {
   console.log('server running at http://localhost:3000')

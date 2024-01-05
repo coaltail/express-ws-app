@@ -33,7 +33,6 @@ export async function authRegisterController (req, res) {
     await newUser.save()
 
     const token = generateToken(newUser)
-    console.log(token)
 
     setTokenCookie(res, token)
     res.status(201).json({
@@ -60,7 +59,7 @@ export async function authLoginController (req, res) {
 
     // If user not found, return error
     if (!user) {
-      return res.status(400).json({ message: 'User does not exist' })
+      return res.status(404).json({ message: 'User does not exist' })
     }
 
     // Compare the hashed password with the password sent in the request
@@ -68,7 +67,7 @@ export async function authLoginController (req, res) {
 
     // If passwords don't match, return error
     if (!passwordMatch) {
-      return res.status(400).json({ message: 'Invalid password' })
+      return res.status(401).json({ message: 'Invalid password' })
     }
 
     // Passwords match, generate a token for the user
@@ -177,12 +176,13 @@ export const tokenRefreshController = (req, res) => {
   if (!token) {
     return res.status(401).json({ message: 'Authentication invalid' })
   }
+  console.log(token)
   try {
     const { payload } = jsonwebtoken.verify(token, process.env.TOKEN_SECRET)
     const authToken = generateToken(payload)
     setTokenCookie(res, authToken)
-    res.status(200).json({ message: 'Token refreshed' })
+    return res.status(200).json({ message: 'Token refreshed' })
   } catch (error) {
-    res.status(401).json({ message: 'Authentication invalid' })
+    return res.status(401).json({ message: 'Authentication invalid' })
   }
 }

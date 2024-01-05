@@ -1,80 +1,70 @@
 <script>
+  import Footer from "../../components/Footer.svelte";
+  import Header from "../../components/Header.svelte";
   let email = "";
   let password = "";
-  let isLogin = true; // To toggle between login and signup forms
-
-  const handleSubmit = async () => {
-    // You would implement actual authentication logic here
-    if (isLogin) {
-      // Login logic
-      console.log(`Logging in with email: ${email} and password: ${password}`);
-    } else {
-      // Signup logic
-      console.log(`Signing up with email: ${email} and password: ${password}`);
-    }
-  };
-  async function login() {
-    const res = await fetch("http://localhost:3000/api/auth/login", {
+  let err = "";
+  const login = async () => {
+    const res = await fetch("http://localhost:3000/api/auth/refresh", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email, password }),
-    }).catch((err) => console.log(err));
-    const data = await res.json();
-    console.log(data);
-  }
+    });
+    console.log(res);
+  };
 </script>
 
-<main>
-  <h1>{isLogin ? "Login" : "Sign Up"}</h1>
+<Header />
+<main class="flex flex-col items-center justify-center min-h-screen">
+  <section class="bg-gray-100 p-8 rounded-md shadow-md w-96">
+    <h2 class="text-2xl font-bold mb-4">Login</h2>
 
-  <form on:submit|preventDefault={login}>
-    <label>
-      Email:
-      <input type="email" bind:value={email} />
-    </label>
+    <!-- Your login form goes here -->
+    <form on:submit={login}>
+      <!-- Add your form fields, labels, and buttons here -->
+      <div class="mb-4">
+        {#if err}
+          <p class="text-red-500 text-xs italic">{{ err }}</p>
+        {/if}
+        <label for="username" class="block text-sm font-medium text-gray-600"
+          >Email:</label
+        >
+        <input
+          type="text"
+          id="username"
+          name="username"
+          class="mt-1 p-2 border rounded-md w-full"
+          bind:value={email}
+        />
+      </div>
 
-    <label>
-      Password:
-      <input type="password" bind:value={password} />
-    </label>
+      <div class="mb-4">
+        <label for="password" class="block text-sm font-medium text-gray-600"
+          >Password:</label
+        >
+        <input
+          type="password"
+          id="password"
+          name="password"
+          class="mt-1 p-2 border rounded-md w-full"
+          bind:value={password}
+        />
+      </div>
 
-    <button type="submit">{isLogin ? "Login" : "Sign Up"}</button>
-  </form>
-
-  <button on:click={() => (isLogin = !isLogin)}>
-    {isLogin
-      ? "Don't have an account? Sign up!"
-      : "Already have an account? Log in!"}
-  </button>
+      <button
+        type="submit"
+        class="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600"
+        >Login</button
+      >
+    </form>
+  </section>
 </main>
+<Footer />
 
 <style>
   main {
-    max-width: 400px;
-    margin: 0 auto;
-    padding: 2rem;
     text-align: center;
-  }
-
-  form {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  label {
-    display: block;
-  }
-
-  button {
-    padding: 0.5rem;
-    cursor: pointer;
-  }
-
-  p {
-    color: #0070f3;
-    cursor: pointer;
+    padding: 20px;
   }
 </style>

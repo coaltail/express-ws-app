@@ -2,7 +2,6 @@ import { authRegisterController, authLoginController, authUserUpdateController, 
 import User from '../../schema/user_schema.js'
 import { jest, it, describe, expect } from '@jest/globals'
 import jwt from 'jsonwebtoken'
-import { userIsAuthenticated, isCorrectUser } from '../../middleware/user_middleware.js'
 import bcrypt from 'bcrypt'
 jest.mock('../../schema/user_schema.js', () => jest.fn())
 jest.mock('bcrypt', () => ({ hash: jest.fn(), compare: jest.fn() }))
@@ -91,25 +90,25 @@ describe('Testing auth register controller...', () => {
 })
 
 describe('Testing login controller', () => {
-  it('Should return 400 when there is a password mismatch', async () => {
+  it('Should return 401 when there is a password mismatch', async () => {
     User.findOne = jest.fn().mockResolvedValueOnce(mockUser)
     bcrypt.compare = jest.fn().mockResolvedValueOnce(false) // Simulate password mismatch
     await authLoginController(request, response)
 
     expect(User.findOne).toHaveBeenCalledWith({ email: request.body.email })
     expect(bcrypt.compare).toHaveBeenCalledWith(request.body.password, mockUser.password)
-    expect(response.status).toHaveBeenCalledWith(400)
+    expect(response.status).toHaveBeenCalledWith(401)
     expect(response.json).toHaveBeenCalledWith({
       message: 'Invalid email or password'
     })
   })
 
-  it('should return 400 when the user does not exist', async () => {
+  it('should return 404 when the user does not exist', async () => {
     User.findOne = jest.fn().mockResolvedValueOnce(null)
     await authLoginController(request, response)
 
     expect(User.findOne).toHaveBeenCalledWith({ email: request.body.email })
-    expect(response.status).toHaveBeenCalledWith(400)
+    expect(response.status).toHaveBeenCalledWith(404)
     expect(response.json).toHaveBeenCalledWith({
       message: 'User does not exist'
     })
