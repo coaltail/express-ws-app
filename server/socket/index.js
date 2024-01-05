@@ -12,7 +12,6 @@ const socketSetup = (server) => {
 
   io.use((socket, next) => {
     const token = socket.handshake.auth.token
-
     if (!token) {
       return next(new Error('Authentication error'))
     }
@@ -31,18 +30,17 @@ const socketSetup = (server) => {
     socket.on('joinRoom', (room) => {
       socket.join(room)
     })
-
     // Handle chat messages within a room
     socket.on('chatMessage', ({ room, message }) => {
       io.to(room).emit('chatMessage', {
-        username: socket.decoded.userId,
+        username: socket.decoded.payload.username,
         message
       })
     })
 
     // Disconnect event
     socket.on('disconnect', () => {
-      console.log('User disconnected:', socket.decoded.userId)
+      console.log('User disconnected:', socket.decoded.payload.username)
     })
   })
 

@@ -1,8 +1,10 @@
 import express from 'express'
-import { authRegisterController, authLoginController, authUserUpdateController, authUserGetController, authUserDeleteController, tokenRefreshController } from '../controllers/auth_controller.js'
+import { authRegisterController, getToken, authLoginController, authUserUpdateController, authUserGetController, authUserDeleteController, tokenRefreshController } from '../controllers/auth_controller.js'
 import { validateRegistration, validateLogin } from '../validation/auth_validation.js'
 import { userIsAuthenticated, isCorrectUser } from '../middleware/user_middleware.js'
 const router = express.Router()
+
+router.get('/token', getToken)
 
 router.post('/register', validateRegistration, authRegisterController)
 
@@ -17,4 +19,5 @@ router.delete('/delete/:id', userIsAuthenticated, isCorrectUser, authUserDeleteC
 router.patch('/password', userIsAuthenticated, isCorrectUser, authUserUpdateController)
 
 router.post('/refresh', userIsAuthenticated, tokenRefreshController)
+
 export default router

@@ -5,13 +5,16 @@
   let password = "";
   let err = "";
   const login = async () => {
-    const res = await fetch("http://localhost:3000/api/auth/refresh", {
+    await fetch("http://localhost:3000/api/auth/login", {
       method: "POST",
       headers: {
+        "Access-Control-Allow-Origin": "*",
         "Content-Type": "application/json",
       },
-    }).then((data) => console.log(data.json()));
-    console.log(res);
+      body: JSON.stringify({ email, password }),
+      withCredentials: true,
+      credentials: "include",
+    });
   };
 </script>
 

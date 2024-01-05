@@ -1,53 +1,69 @@
 <script>
-  import { onMount, onDestroy } from "svelte";
-  import io from "socket.io-client";
+  import { onMount } from "svelte";
+  import { io } from "socket.io-client";
 
   let socket;
+  let room = "default";
+  let message = "";
   let messages = [];
-  let messageInput = "";
 
-  const room = "exampleRoom";
+  onMount(async () => {
+    // Make an HTTP request to get the authentication token
+    const response = await fetch("http://localhost:3000/api/auth/token", {
+      method: "GET",
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Content-Type": "application/json",
+      },
+      withCredentials: true,
+      credentials: "include",
+    });
 
-  function sendMessage() {
-    // Send chat message to the server
-    socket.emit("chatMessage", { room, message: messageInput });
-    messageInput = ""; // Clear the input field
-  }
+    const { token } = await response.json();
 
-  onMount(() => {
-    // Connect to the Socket.IO server
-    socket = io("http://localhost:3000");
+    // Connect to the socket server and pass the token as a query parameter
+    socket = io("http://localhost:3000", {
+      auth: {
+        token,
+      },
+    });
 
-    // Join the room
+    // Join the default room
     socket.emit("joinRoom", room);
 
-    // Listen for chat messages
+    // Listen for incoming chat messages
     socket.on("chatMessage", (data) => {
+      console.log(data);
       messages = [...messages, data];
     });
 
-    // Clean up the socket connection when the component is destroyed
-    onDestroy(() => {
+    // Cleanup socket connection on component destroy
+    return () => {
       socket.disconnect();
-    });
+    };
   });
+
+  function sendMessage() {
+    if (message.trim() !== "") {
+      // Send chat message to the server
+      socket.emit("chatMessage", { room, message });
+
+      // Clear the input field
+      message = "";
+    }
+  }
 </script>
 
 <main>
   <h1>Chat</h1>
 
-  <div class="messages">
-    {#each messages as message}
-      <p>{message}</p>
-    {/each}
-  </div>
-
-  <div class="input">
-    <input
-      type="text"
-      bind:value={messageInput}
-      placeholder="Type your message..."
-    />
+  <div>
+    <div>
+      {#each messages as { username, message } (message)}
+        <p>{username}: {message}</p>
+      {/each}
+    </div>
+    <input bind:value={message} placeholder="Type a message..." />
     <button on:click={sendMessage}>Send</button>
   </div>
 </main>

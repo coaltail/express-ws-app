@@ -73,7 +73,6 @@ export async function authLoginController (req, res) {
     // Passwords match, generate a token for the user
     const token = generateToken(user)
 
-    // Set the token as a cookie
     setTokenCookie(res, token)
 
     res.status(200).json({
@@ -172,6 +171,8 @@ export async function authUserChangePasswordController (req, res) {
 }
 
 export const tokenRefreshController = (req, res) => {
+  console.log('Token refresh')
+  res.cookie('test', 'test')
   const token = req.cookies.token
   if (!token) {
     return res.status(401).json({ message: 'Authentication invalid' })
@@ -182,6 +183,19 @@ export const tokenRefreshController = (req, res) => {
     const authToken = generateToken(payload)
     setTokenCookie(res, authToken)
     return res.status(200).json({ message: 'Token refreshed' })
+  } catch (error) {
+    return res.status(401).json({ message: 'Authentication invalid' })
+  }
+}
+
+export const getToken = (req, res) => {
+  const token = req.cookies.token
+  if (!token) {
+    return res.status(401).json({ message: 'Authentication invalid' })
+  }
+  try {
+    jsonwebtoken.verify(token, process.env.TOKEN_SECRET)
+    return res.status(200).json({ token })
   } catch (error) {
     return res.status(401).json({ message: 'Authentication invalid' })
   }
