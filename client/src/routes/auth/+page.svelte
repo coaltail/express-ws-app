@@ -10,7 +10,7 @@
       headers: {
         "Content-Type": "application/json",
       },
-    });
+    }).then((data) => console.log(data.json()));
     console.log(res);
   };
 </script>
