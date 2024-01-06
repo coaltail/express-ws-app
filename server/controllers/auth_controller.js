@@ -26,7 +26,9 @@ export async function authRegisterController (req, res) {
     // Create a new user with the hashed password
     const newUser = new User({
       ...rest,
-      password: hashedPassword
+      password: hashedPassword,
+      email
+
     })
 
     // Save the user to the database
