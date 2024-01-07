@@ -1,5 +1,5 @@
 import express from 'express'
-import { authRegisterController, getToken, authLoginController, authUserUpdateController, authUserGetController, authUserDeleteController, tokenRefreshController } from '../controllers/auth_controller.js'
+import { authRegisterController, logoutController, getToken, authLoginController, authUserUpdateController, authUserGetController, authUserDeleteController, tokenRefreshController } from '../controllers/auth_controller.js'
 import { validateRegistration, validateLogin } from '../validation/auth_validation.js'
 import { userIsAuthenticated, isCorrectUser } from '../middleware/user_middleware.js'
 const router = express.Router()
@@ -9,6 +9,8 @@ router.get('/token', getToken)
 router.post('/register', validateRegistration, authRegisterController)
 
 router.post('/login', validateLogin, authLoginController)
+
+router.post('/logout', logoutController)
 
 router.put('/update/:id', userIsAuthenticated, isCorrectUser, authUserUpdateController)
 

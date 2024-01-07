@@ -202,3 +202,11 @@ export const getToken = (req, res) => {
     return res.status(401).json({ message: 'Authentication invalid' })
   }
 }
+
+export const logoutController = async (req, res) => {
+  if (!req.cookies.token) {
+    return res.status(401).json({ message: 'Authentication invalid' })
+  }
+  res.clearCookie('token')
+  res.status(200).json({ message: 'Logout successful' })
+}

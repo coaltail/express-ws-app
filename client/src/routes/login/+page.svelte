@@ -1,11 +1,18 @@
 <script>
+  import { onDestroy } from "svelte";
   import Footer from "../../components/Footer.svelte";
   import Header from "../../components/Header.svelte";
+  import { user } from "../../stores/user.js";
   let email = "";
   let password = "";
   let err = "";
+  let u_value;
+  let unsubscribe = user.subscribe((u) => (u_value = u));
+  user.subscribe((value) => {
+    u_value = value;
+  });
   const login = async () => {
-    await fetch("http://localhost:3000/api/auth/login", {
+    const response = await fetch("http://localhost:3000/api/auth/login", {
       method: "POST",
       headers: {
         "Access-Control-Allow-Origin": "*",
@@ -15,7 +22,20 @@
       withCredentials: true,
       credentials: "include",
     });
+
+    if (response.ok) {
+      const userData = await response.json();
+      console.log(userData.user);
+      user.update((u) => {
+        u = JSON.stringify(userData.user);
+      });
+    } else {
+      err = "Login failed. Please try again.";
+    }
   };
+  onDestroy(() => {
+    unsubscribe();
+  });
 </script>
 
 <Header />

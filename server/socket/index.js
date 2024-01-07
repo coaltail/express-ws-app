@@ -41,6 +41,7 @@ const socketSetup = (server) => {
     // Disconnect event
     socket.on('disconnect', () => {
       console.log('User disconnected:', socket.decoded.payload.username)
+      io.emit('userDisconnected', socket.decoded.payload.username)
     })
   })
 
