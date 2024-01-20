@@ -8,9 +8,6 @@
   let err = "";
   let u_value;
   let unsubscribe = user.subscribe((u) => (u_value = u));
-  user.subscribe((value) => {
-    u_value = value;
-  });
   const login = async () => {
     const response = await fetch("http://localhost:3000/api/auth/login", {
       method: "POST",
@@ -26,15 +23,13 @@
     if (response.ok) {
       const userData = await response.json();
       console.log(userData.user);
-      user.update((u) => {
-        u = JSON.stringify(userData.user);
-      });
+      $user = JSON.stringify(userData.user);
     } else {
       err = "Login failed. Please try again.";
     }
   };
   onDestroy(() => {
-    unsubscribe();
+    unsubscribe;
   });
 </script>
 

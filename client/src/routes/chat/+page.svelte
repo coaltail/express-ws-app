@@ -1,7 +1,8 @@
 <script>
   import { onMount } from "svelte";
   import { io } from "socket.io-client";
-
+  import Header from "../../components/Header.svelte";
+  import Footer from "../../components/Footer.svelte";
   let socket;
   let room = "default";
   let message = "";
@@ -54,6 +55,7 @@
   }
 </script>
 
+<Header />
 <main>
   <h1>Chat</h1>
 
@@ -67,6 +69,7 @@
     <button on:click={sendMessage}>Send</button>
   </div>
 </main>
+<Footer />
 
 <style>
   main {

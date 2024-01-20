@@ -19,6 +19,7 @@
       });
     }
   };
+  console.log("User is: ", $user);
 </script>
 
 <header class="bg-gray-800 text-white p-4 flex justify-center items-center">
@@ -29,7 +30,7 @@
       <a href="#" class="text-sm mx-2">About</a>
       <a href="#" class="text-sm mx-2">Services</a>
       <a href="#" class="text-sm mx-2">Contact</a>
-      {#if $user}
+      {#if $user != undefined && $user != null}
         <a on:click={logout} class="text-sm mx-2">Logout</a>
       {:else}
         <a href="/login" class="text-sm mx-2">Login</a>

@@ -8,6 +8,9 @@ describe('Testing authentication middleware', () => {
       const req = {
         headers: {
           authorization: null
+        },
+        cookies: {
+          token: null
         }
       }
       const res = {

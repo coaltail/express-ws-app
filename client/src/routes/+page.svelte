@@ -2,8 +2,6 @@
   import { onMount } from "svelte";
   import Header from "../components/Header.svelte";
   import Footer from "../components/Footer.svelte";
-  import { user } from "../stores/user.js";
-  console.log(user);
 </script>
 
 <Header></Header>
@@ -21,5 +19,5 @@
 <Footer></Footer>
 
 <style>
-  /* Add your custom styles here */
+  
 </style>
