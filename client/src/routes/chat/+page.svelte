@@ -56,65 +56,39 @@
 </script>
 
 <Header />
-<main>
-  <h1>Chat</h1>
+<main class="flex flex-col items-center justify-center h-screen p-20 font-sans">
+  <h1 class="text-2xl font-bold">Chat</h1>
 
-  <div>
-    <div>
-      {#each messages as { username, message } (message)}
-        <p>{username}: {message}</p>
-      {/each}
-    </div>
-    <input bind:value={message} placeholder="Type a message..." />
-    <button on:click={sendMessage}>Send</button>
+  <div class="flex flex-col items-start mb-20">
+    {#each messages as { username, message } (message)}
+      <div class="flex flex-col items-start mb-4">
+        <p class="bg-gray-200 p-2 rounded-lg">{username}: {message}</p>
+      </div>
+    {/each}
+  </div>
+  <div class="flex items-center">
+    <input
+      class="flex-1 p-2 rounded-lg border border-gray-300 mr-4"
+      bind:value={message}
+      placeholder="Type a message..."
+    />
+    <button
+      class="p-2 px-4 rounded-lg bg-blue-500 text-white"
+      on:click={sendMessage}>Send</button
+    >
   </div>
 </main>
 <Footer />
 
 <style>
+  /* Your existing styles here */
+
   main {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    padding: 20px;
-    font-family: Arial, sans-serif;
-  }
-
-  .messages {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    margin-bottom: 20px;
-  }
-
-  .messages p {
+    /* Additional styles for the chat container */
     background-color: #f2f2f2;
-    padding: 10px;
-    border-radius: 5px;
-    margin-bottom: 10px;
-  }
-
-  .input {
-    display: flex;
-    align-items: center;
-  }
-
-  .input input {
-    flex: 1;
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    margin-right: 10px;
-  }
-
-  .input button {
-    padding: 10px 20px;
-    border-radius: 5px;
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    cursor: pointer;
+    border-radius: 10px;
+    padding: 20px;
+    max-width: 500px;
+    margin: 0 auto;
   }
 </style>

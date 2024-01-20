@@ -14,13 +14,14 @@ describe('Testing authentication middleware', () => {
         }
       }
       const res = {
-        sendStatus: jest.fn()
+        json: jest.fn(),
+        status: jest.fn().mockReturnThis()
       }
       const next = jest.fn()
-
+      const mockError = new jwt.JsonWebTokenError('jwt must be provided')
       userIsAuthenticated(req, res, next)
 
-      expect(res.sendStatus).toHaveBeenCalledWith(401)
+      expect(res.json).toHaveBeenCalledWith({ message: mockError })
       expect(next).not.toHaveBeenCalled()
     })
 
@@ -29,6 +30,9 @@ describe('Testing authentication middleware', () => {
       const req = {
         headers: {
           authorization: `Bearer ${token}`
+        },
+        cookies: {
+          token
         }
       }
       const res = {
@@ -53,10 +57,14 @@ describe('Testing authentication middleware', () => {
       const req = {
         headers: {
           authorization: `Bearer ${token}`
+        },
+        cookies: {
+          token
         }
       }
       const res = {
-        json: jest.fn()
+        json: jest.fn(),
+        status: jest.fn().mockReturnThis()
       }
       const next = jest.fn()
 

@@ -17,6 +17,7 @@
       user.update((u) => {
         u = null;
       });
+      window.location.href = "/";
     }
   };
   console.log("User is: ", $user);
@@ -30,7 +31,7 @@
       <a href="#" class="text-sm mx-2">About</a>
       <a href="#" class="text-sm mx-2">Services</a>
       <a href="#" class="text-sm mx-2">Contact</a>
-      {#if $user != undefined && $user != null}
+      {#if $user !== undefined && $user !== null && $user !== ""}
         <a on:click={logout} class="text-sm mx-2">Logout</a>
       {:else}
         <a href="/login" class="text-sm mx-2">Login</a>
@@ -41,7 +42,7 @@
 </header>
 
 <style>
-  /* You can add additional styles here if needed */
+
   a {
     text-decoration: none;
   }
