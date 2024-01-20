@@ -1,9 +1,7 @@
 import jwt from 'jsonwebtoken'
 
 export const userIsAuthenticated = (req, res, next) => {
-  const authHeader = req.headers.authorization
-  const token = authHeader && authHeader.split(' ')[1]
-  if (token == null) return res.sendStatus(401)
+  const token = req.cookies.token
 
   jwt.verify(token, process.env.TOKEN_SECRET, (err, user) => {
     if (err) return res.json({ message: err })
@@ -20,7 +18,7 @@ export const isCorrectUser = (req, res, next) => {
 
   const userId = req.user.userId
   const { id } = req.params
-
+  console.log('Called!')
   // Type check to ensure strict equality
   if (id !== userId) {
     return res.status(403).json({ error: 'Unauthorized: You do not have permission to perform this action.' })

@@ -2,6 +2,7 @@ import { validationResult } from 'express-validator'
 import bcrypt from 'bcrypt'
 import User from '../schema/user_schema.js'
 import jsonwebtoken from 'jsonwebtoken'
+import { setTokenCookie, generateToken } from '../utils/auth_utils.js'
 
 export async function authRegisterController (req, res) {
   try {
@@ -25,22 +26,19 @@ export async function authRegisterController (req, res) {
     // Create a new user with the hashed password
     const newUser = new User({
       ...rest,
-      password: hashedPassword
+      password: hashedPassword,
+      email
+
     })
 
     // Save the user to the database
     await newUser.save()
 
-    // Generate a token for the user
-    const token = jsonwebtoken.sign(
-      { userId: newUser._id },
-      process.env.TOKEN_SECRET,
-      { expiresIn: '1h' }
-    )
+    const token = generateToken(newUser)
 
+    setTokenCookie(res, token)
     res.status(201).json({
-      message: 'User registered successfully',
-      token
+      message: 'User registered successfully'
     })
   } catch (error) {
     res.status(500).json({
@@ -63,7 +61,7 @@ export async function authLoginController (req, res) {
 
     // If user not found, return error
     if (!user) {
-      return res.status(400).json({ message: 'User does not exist' })
+      return res.status(404).json({ message: 'User does not exist' })
     }
 
     // Compare the hashed password with the password sent in the request
@@ -71,11 +69,13 @@ export async function authLoginController (req, res) {
 
     // If passwords don't match, return error
     if (!passwordMatch) {
-      return res.status(400).json({ message: 'Invalid email or password' })
+      return res.status(401).json({ message: 'Invalid password' })
     }
 
     // Passwords match, generate a token for the user
-    const token = jsonwebtoken.sign({ userId: user._id }, process.env.TOKEN_SECRET, { expiresIn: '2h' })
+    const token = generateToken(user)
+
+    setTokenCookie(res, token)
 
     res.status(200).json({
       message: 'Login successful',
@@ -84,8 +84,7 @@ export async function authLoginController (req, res) {
         name: user.name,
         email: user.email,
         username: user.username
-      },
-      token
+      }
     })
   } catch (error) {
     res.status(500).json(error)
@@ -171,4 +170,43 @@ export async function authUserChangePasswordController (req, res) {
       Error: error
     })
   }
+}
+
+export const tokenRefreshController = (req, res) => {
+  console.log('Token refresh')
+  res.cookie('test', 'test')
+  const token = req.cookies.token
+  if (!token) {
+    return res.status(401).json({ message: 'Authentication invalid' })
+  }
+  console.log(token)
+  try {
+    const { payload } = jsonwebtoken.verify(token, process.env.TOKEN_SECRET)
+    const authToken = generateToken(payload)
+    setTokenCookie(res, authToken)
+    return res.status(200).json({ message: 'Token refreshed' })
+  } catch (error) {
+    return res.status(401).json({ message: 'Authentication invalid' })
+  }
+}
+
+export const getToken = (req, res) => {
+  const token = req.cookies.token
+  if (!token) {
+    return res.status(401).json({ message: 'Authentication invalid' })
+  }
+  try {
+    jsonwebtoken.verify(token, process.env.TOKEN_SECRET)
+    return res.status(200).json({ token })
+  } catch (error) {
+    return res.status(401).json({ message: 'Authentication invalid' })
+  }
+}
+
+export const logoutController = async (req, res) => {
+  if (!req.cookies.token) {
+    return res.status(401).json({ message: 'Authentication invalid' })
+  }
+  res.clearCookie('token')
+  res.status(200).json({ message: 'Logout successful' })
 }
